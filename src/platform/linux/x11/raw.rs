@@ -1,9 +1,7 @@
+use super::event::XEvent;
+
 pub enum Display {}
 pub type Window = u64;
-
-pub struct XEvent {
-    pub data: [u8; 192],
-}
 
 #[link(name = "X11")]
 unsafe extern "C" {
@@ -14,6 +12,11 @@ unsafe extern "C" {
     pub fn XMapWindow(display: *mut Display, window: Window) -> i32;
     pub fn XSelectInput(display: *mut Display, window: Window, event_mask: i64) -> i32;
     pub fn XNextEvent(display: *mut Display, event: &mut XEvent);
+    pub fn XInternAtom(
+        display: *mut Display,
+        name: *const std::ffi::c_char,
+        only_if_exists: i32,
+    ) -> u64;
     pub fn XCreateSimpleWindow(
         display: *mut Display,
         parent: Window,

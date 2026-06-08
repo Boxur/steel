@@ -1,13 +1,14 @@
+pub mod event;
 mod event_mask;
 pub mod raw;
-use crate::platform::linux::x11::raw::*;
+use crate::platform::linux::x11::{event::XEvent, raw::*};
 use event_mask::EventMask;
 
 pub struct X11Window {
     pub display: *mut Display,
-    screen_number: i32,
-    window: Window,
-    parent_window: Window,
+    _screen_number: i32,
+    _window: Window,
+    _parent_window: Window,
 }
 
 impl X11Window {
@@ -31,9 +32,9 @@ impl X11Window {
 
             Self {
                 display,
-                screen_number,
-                parent_window,
-                window,
+                _screen_number: screen_number,
+                _parent_window: parent_window,
+                _window: window,
             }
         }
     }

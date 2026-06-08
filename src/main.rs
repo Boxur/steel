@@ -1,11 +1,11 @@
-use steel::platform::linux::x11::{
-    X11Window,
-    raw::{XEvent, XNextEvent},
-};
+use steel::window::{Window, event::Event};
 
 fn main() {
-    let window = X11Window::new();
+    let window = Window::new();
     loop {
-        window.next_event();
+        let event = window.next_event();
+        if let Event::Quit = event {
+            break;
+        }
     }
 }
