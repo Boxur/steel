@@ -1,9 +1,17 @@
 #[derive(Debug)]
 pub enum Event {
-    KeyPress { keycode: u8 },
-    KeyRelease { keycode: u8 },
-    ButtonPress,
-    ButtonRelease,
+    Key {
+        _x: i32,
+        _y: i32,
+        state: u32,
+        keycode: u32,
+    },
+    Mouse {
+        x: i32,
+        y: i32,
+        state: u32,
+        keycode: u32,
+    },
     MotionNotify,
     EnterNotify,
     LeaveNotify,

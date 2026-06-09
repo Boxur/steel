@@ -41,6 +41,9 @@ impl X11Window {
                 window,
                 (event_mask::EventMask::exposure()
                     | event_mask::EventMask::key_press()
+                    | event_mask::EventMask::key_release()
+                    | event_mask::EventMask::button_press()
+                    | event_mask::EventMask::button_release()
                     | event_mask::EventMask::structure_notify())
                 .into(),
             );

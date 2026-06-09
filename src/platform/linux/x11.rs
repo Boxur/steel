@@ -1,5 +1,5 @@
 mod event_mask;
-pub mod xevent;
+mod xevent;
 
 mod atoms;
 mod raw;
