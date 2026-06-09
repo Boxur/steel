@@ -1,4 +1,5 @@
 type Atom = u64;
+#[derive(Clone, Copy)]
 pub struct Atoms {
     pub wm_delete_window: Atom,
 }

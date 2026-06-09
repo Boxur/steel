@@ -1,4 +1,4 @@
-use super::event::XEvent;
+use super::xevent::XEvent;
 
 pub enum Display {}
 pub type Window = u64;

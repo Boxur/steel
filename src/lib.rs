@@ -1,2 +1,2 @@
-pub mod platform;
+mod platform;
 pub mod window;
