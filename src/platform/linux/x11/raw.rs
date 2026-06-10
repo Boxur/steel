@@ -1,4 +1,4 @@
-use super::xevent::XEvent;
+use crate::platform::linux::x11::xevent::Data;
 
 pub enum Display {}
 pub type Window = usize;
@@ -11,7 +11,7 @@ unsafe extern "C" {
     pub fn XRootWindow(display: *mut Display, screen_number: i32) -> Window;
     pub fn XMapWindow(display: *mut Display, window: Window) -> i32;
     pub fn XSelectInput(display: *mut Display, window: Window, event_mask: isize) -> i32;
-    pub fn XNextEvent(display: *mut Display, event: &mut XEvent);
+    pub fn XNextEvent(display: *mut Display, event: &mut Data);
     pub fn XInternAtom(
         display: *mut Display,
         name: *const std::ffi::c_char,

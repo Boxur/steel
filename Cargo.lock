@@ -3,5 +3,12 @@
 version = 4
 
 [[package]]
+name = "channel"
+version = "0.1.0"
+
+[[package]]
 name = "steel"
 version = "0.1.0"
+dependencies = [
+ "channel",
+]

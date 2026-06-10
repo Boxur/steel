@@ -1,6 +1,6 @@
 use std::ffi::CString;
 
-use super::atoms::Atoms;
+use super::xatoms::XAtoms;
 use crate::platform::linux::x11::{event_mask, raw, xevent};
 
 #[derive(Debug)]
@@ -9,7 +9,7 @@ pub struct X11Window {
     _screen_number: i32,
     _window: raw::Window,
     _parent_window: raw::Window,
-    atoms: Atoms,
+    atoms: XAtoms,
 }
 
 impl X11Window {
@@ -23,8 +23,8 @@ impl X11Window {
         }
     }
 
-    pub fn get_atoms(&self) -> Atoms {
-        self.atoms.clone()
+    pub fn get_atoms(&self) -> &XAtoms {
+        &self.atoms
     }
 
     pub fn new() -> Self {
@@ -60,19 +60,19 @@ impl X11Window {
                 _screen_number: screen_number,
                 _parent_window: parent_window,
                 _window: window,
-                atoms: Atoms::default(),
+                atoms: XAtoms::default(),
             };
             xwindow.setup_atoms();
             xwindow
         }
     }
 
-    pub fn next_event(&self) -> xevent::XEvent {
-        let mut event = xevent::XEvent { data: [0u8; 192] };
+    pub fn next_event(&self) -> xevent::Data {
+        let mut data = [0u8; 192];
         unsafe {
-            raw::XNextEvent(self.display, &mut event);
+            raw::XNextEvent(self.display, &mut data);
         };
-        event
+        data
     }
 }
 

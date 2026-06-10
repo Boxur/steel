@@ -1,11 +1,16 @@
 use crate::{
-    platform::linux::x11::{atoms, raw, xwindow},
+    platform::linux::x11::{
+        raw,
+        xatoms::{self, XAtoms},
+    },
     window::{self, event::Event},
 };
 
+pub type Data = [u8; 192];
 #[repr(C)]
-pub struct XEvent {
-    pub data: [u8; 192],
+pub enum XEvent {
+    Data(Data),
+    Atoms(XAtoms),
 }
 
 type Time = usize;
@@ -99,10 +104,10 @@ impl XClientMessageEvent {
 }
 
 impl Event {
-    fn decode_key_press(event: &XEvent, key_states: &mut window::KeyStates) -> Event {
+    fn decode_key_press(data: &Data, key_states: &mut window::KeyStates) -> Event {
         let key_press_event;
         unsafe {
-            key_press_event = (*(event.data.as_ptr() as *const XInputEvent)).clone();
+            key_press_event = (*(data.as_ptr() as *const XInputEvent)).clone();
         }
         *key_states.entry(key_press_event.keycode).or_insert(true) = true;
         Event::Key {
@@ -113,10 +118,10 @@ impl Event {
         }
     }
 
-    fn decode_key_release(event: &XEvent, key_states: &mut window::KeyStates) -> Event {
+    fn decode_key_release(data: &Data, key_states: &mut window::KeyStates) -> Event {
         let key_release_event;
         unsafe {
-            key_release_event = (*(event.data.as_ptr() as *const XInputEvent)).clone();
+            key_release_event = (*(data.as_ptr() as *const XInputEvent)).clone();
         }
         *key_states.entry(key_release_event.keycode).or_insert(false) = false;
         Event::Key {
@@ -127,10 +132,10 @@ impl Event {
         }
     }
 
-    fn decode_button_press(event: &XEvent, button_states: &mut window::ButtonStates) -> Event {
+    fn decode_button_press(data: &Data, button_states: &mut window::ButtonStates) -> Event {
         let button_press_event;
         unsafe {
-            button_press_event = (*(event.data.as_ptr() as *const XInputEvent)).clone();
+            button_press_event = (*(data.as_ptr() as *const XInputEvent)).clone();
         }
         *button_states
             .entry(button_press_event.keycode)
@@ -143,10 +148,10 @@ impl Event {
         }
     }
 
-    fn decode_button_release(event: &XEvent, button_states: &mut window::ButtonStates) -> Event {
+    fn decode_button_release(data: &Data, button_states: &mut window::ButtonStates) -> Event {
         let button_release_event;
         unsafe {
-            button_release_event = (*(event.data.as_ptr() as *const XInputEvent)).clone();
+            button_release_event = (*(data.as_ptr() as *const XInputEvent)).clone();
         }
         *button_states
             .entry(button_release_event.keycode)
@@ -159,10 +164,10 @@ impl Event {
         }
     }
 
-    fn decode_motion(event: &XEvent, mouse_position: &mut window::mouse_pos::MousePos) -> Event {
+    fn decode_motion(data: &Data, mouse_position: &mut window::mouse_pos::MousePos) -> Event {
         let motion_event;
         unsafe {
-            motion_event = (*(event.data.as_ptr() as *const XInputEvent)).clone();
+            motion_event = (*(data.as_ptr() as *const XInputEvent)).clone();
         }
         (mouse_position.x, mouse_position.y) = (motion_event.x, motion_event.y);
         Event::Motion {
@@ -187,10 +192,9 @@ impl Event {
         Event::FocusOut
     }
 
-    fn decode_resize_request(event: &XEvent, window_size: &mut window::size::WindowSize) -> Event {
+    fn decode_resize_request(data: &Data, window_size: &mut window::size::WindowSize) -> Event {
         unsafe {
-            let resize_request_event =
-                (*(event.data.as_ptr() as *const XResizeRequestEvent)).clone();
+            let resize_request_event = (*(data.as_ptr() as *const XResizeRequestEvent)).clone();
             (window_size.width, window_size.height) =
                 (resize_request_event.width, resize_request_event.height);
             Event::ResizeRequest {
@@ -200,10 +204,9 @@ impl Event {
         }
     }
 
-    fn decode_client_message(event: &XEvent, atoms: &atoms::Atoms) -> Event {
+    fn decode_client_message(data: &Data, atoms: &xatoms::XAtoms) -> Event {
         unsafe {
-            let client_message_event =
-                (*(event.data.as_ptr() as *const XClientMessageEvent)).clone();
+            let client_message_event = (*(data.as_ptr() as *const XClientMessageEvent)).clone();
             if client_message_event.get_data()[0] == atoms.wm_delete_window {
                 return Event::Quit;
             }
@@ -212,28 +215,27 @@ impl Event {
     }
 
     pub fn decode_event(
-        xwindow: &xwindow::X11Window,
+        data: &Data,
         key_states: &mut window::KeyStates,
         button_states: &mut window::ButtonStates,
         mouse_position: &mut window::mouse_pos::MousePos,
         window_size: &mut window::size::WindowSize,
+        xatoms: &xatoms::XAtoms,
     ) -> Event {
-        let atoms = xwindow.get_atoms();
-        let event = xwindow.next_event();
         unsafe {
-            let event_type = *(event.data.as_ptr() as *const i32);
+            let event_type = *(data.as_ptr() as *const i32);
             match event_type {
-                02 => Event::decode_key_press(&event, key_states),
-                03 => Event::decode_key_release(&event, key_states),
-                04 => Event::decode_button_press(&event, button_states),
-                05 => Event::decode_button_release(&event, button_states),
-                06 => Event::decode_motion(&event, mouse_position),
+                02 => Event::decode_key_press(&data, key_states),
+                03 => Event::decode_key_release(&data, key_states),
+                04 => Event::decode_button_press(&data, button_states),
+                05 => Event::decode_button_release(&data, button_states),
+                06 => Event::decode_motion(&data, mouse_position),
                 07 => Event::decode_enter_window(),
                 08 => Event::decode_leave_window(),
                 09 => Event::decode_focus_in(),
                 10 => Event::decode_focus_out(),
-                25 => Event::decode_resize_request(&event, window_size),
-                33 => Event::decode_client_message(&event, &atoms),
+                25 => Event::decode_resize_request(&data, window_size),
+                33 => Event::decode_client_message(&data, &xatoms),
                 _ => Event::None,
             }
         }

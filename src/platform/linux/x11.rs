@@ -1,6 +1,7 @@
 mod event_mask;
-mod xevent;
+pub mod xevent;
 
-mod atoms;
 mod raw;
+mod xatoms;
+pub mod xmessage;
 pub mod xwindow;
