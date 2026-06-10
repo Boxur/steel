@@ -4,20 +4,20 @@ pub mod message;
 pub mod mouse_pos;
 pub mod size;
 
-use crate::platform::linux::x11::xevent::XEvent;
-use crate::platform::linux::x11::xmessage::XMessage;
-use crate::platform::linux::x11::xwindow::X11Window;
-use crate::window::data::WindowData;
-use crate::window::message::Message;
-use std::collections::HashMap;
-use std::sync::mpsc::TryRecvError;
-use std::sync::{Arc, Mutex, MutexGuard};
-use std::thread::{self, JoinHandle};
-
 use channel::Channel;
+use data::WindowData;
 use event::Event;
+use message::Message;
 use mouse_pos::MousePos;
 use size::WindowSize;
+
+use crate::platform::linux::x11::{xevent::XEvent, xmessage::XMessage, xwindow::X11Window};
+
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, MutexGuard, mpsc::TryRecvError},
+    thread::{self, JoinHandle},
+};
 
 pub type KeyStates = HashMap<u32, bool>;
 pub type ButtonStates = HashMap<u32, bool>;
@@ -109,10 +109,6 @@ impl Window {
 
     pub fn next_event(&mut self) -> Event {
         self.main_update_channel.recv().unwrap()
-        // if let Ok(event) = self.main_update_channel.try_recv() {
-        //     return Some(event);
-        // }
-        // return None;
     }
 
     pub fn send_message(&mut self, message: Message) {
