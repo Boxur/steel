@@ -14,7 +14,7 @@ use std::sync::mpsc::TryRecvError;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::thread::{self, JoinHandle};
 
-use channel::{ChannelA, ChannelB};
+use channel::Channel;
 use event::Event;
 use mouse_pos::MousePos;
 use size::WindowSize;
@@ -24,7 +24,7 @@ pub type ButtonStates = HashMap<u32, bool>;
 
 #[derive(Debug)]
 pub struct Window {
-    main_update_channel: ChannelA<Message, Event>,
+    main_update_channel: Channel<Message, Event>,
     update_loop: Option<JoinHandle<()>>,
     event_loop: Option<JoinHandle<()>>,
     data: Arc<Mutex<WindowData>>,
@@ -33,12 +33,12 @@ pub struct Window {
 impl Window {
     pub fn new() -> Window {
         let (main_update_channel, update_main_channel): (
-            ChannelA<Message, Event>,
-            ChannelB<Message, Event>,
+            Channel<Message, Event>,
+            Channel<Event, Message>,
         ) = channel::new();
         let (update_event_channel, event_update_channel): (
-            ChannelA<XMessage, XEvent>,
-            ChannelB<XMessage, XEvent>,
+            Channel<XMessage, XEvent>,
+            Channel<XEvent, XMessage>,
         ) = channel::new();
         let data = Arc::new(Mutex::new(WindowData {
             key_states: KeyStates::new(),
