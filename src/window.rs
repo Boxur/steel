@@ -32,14 +32,8 @@ pub struct Window {
 
 impl Window {
     pub fn new() -> Window {
-        let (main_update_channel, update_main_channel): (
-            Channel<Message, Event>,
-            Channel<Event, Message>,
-        ) = channel::new();
-        let (update_event_channel, event_update_channel): (
-            Channel<XMessage, XEvent>,
-            Channel<XEvent, XMessage>,
-        ) = channel::new();
+        let (main_update_channel, update_main_channel) = channel::new();
+        let (update_event_channel, event_update_channel) = channel::new();
         let data = Arc::new(Mutex::new(WindowData {
             key_states: KeyStates::new(),
             button_states: ButtonStates::new(),
