@@ -1,7 +1,7 @@
 use super::xevent::XEvent;
 
 pub enum Display {}
-pub type Window = u64;
+pub type Window = usize;
 
 #[link(name = "X11")]
 unsafe extern "C" {
@@ -10,13 +10,13 @@ unsafe extern "C" {
     pub fn XDefaultScreen(display: *mut Display) -> i32;
     pub fn XRootWindow(display: *mut Display, screen_number: i32) -> Window;
     pub fn XMapWindow(display: *mut Display, window: Window) -> i32;
-    pub fn XSelectInput(display: *mut Display, window: Window, event_mask: i64) -> i32;
+    pub fn XSelectInput(display: *mut Display, window: Window, event_mask: isize) -> i32;
     pub fn XNextEvent(display: *mut Display, event: &mut XEvent);
     pub fn XInternAtom(
         display: *mut Display,
         name: *const std::ffi::c_char,
         only_if_exists: i32,
-    ) -> u64;
+    ) -> usize;
     pub fn XCreateSimpleWindow(
         display: *mut Display,
         parent: Window,
@@ -25,7 +25,7 @@ unsafe extern "C" {
         width: u32,
         height: u32,
         border_width: u32,
-        border: u64,
-        background: u64,
+        border: usize,
+        background: usize,
     ) -> Window;
 }

@@ -1,7 +1,7 @@
 use std::ops;
 
 pub struct EventMask {
-    bits: i64,
+    bits: isize,
 }
 
 impl EventMask {
@@ -119,7 +119,7 @@ impl ops::BitOr for EventMask {
     }
 }
 
-impl From<EventMask> for i64 {
+impl From<EventMask> for isize {
     fn from(value: EventMask) -> Self {
         value.bits
     }

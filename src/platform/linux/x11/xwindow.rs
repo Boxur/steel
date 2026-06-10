@@ -3,6 +3,7 @@ use std::ffi::CString;
 use super::atoms::Atoms;
 use crate::platform::linux::x11::{event_mask, raw, xevent};
 
+#[derive(Debug)]
 pub struct X11Window {
     pub display: *mut raw::Display,
     _screen_number: i32,
@@ -23,7 +24,7 @@ impl X11Window {
     }
 
     pub fn get_atoms(&self) -> Atoms {
-        self.atoms
+        self.atoms.clone()
     }
 
     pub fn new() -> Self {
@@ -44,6 +45,11 @@ impl X11Window {
                     | event_mask::EventMask::key_release()
                     | event_mask::EventMask::button_press()
                     | event_mask::EventMask::button_release()
+                    | event_mask::EventMask::pointer_motion()
+                    | event_mask::EventMask::enter_window()
+                    | event_mask::EventMask::leave_window()
+                    | event_mask::EventMask::focus_change()
+                    | event_mask::EventMask::resize_redirect()
                     | event_mask::EventMask::structure_notify())
                 .into(),
             );
