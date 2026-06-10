@@ -1,9 +1,11 @@
 use std::sync::mpsc::{self, Receiver, SendError, Sender};
 
+#[derive(Debug)]
 pub struct ChannelA<T, U> {
     sender: Sender<T>,
     receiver: Receiver<U>,
 }
+#[derive(Debug)]
 pub struct ChannelB<T, U> {
     sender: Sender<U>,
     receiver: Receiver<T>,
