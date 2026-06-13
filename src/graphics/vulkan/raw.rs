@@ -1,8 +1,6 @@
-use super::vk_structures;
-pub type VkInstance = *mut std::ffi::c_void;
-pub type VkSurfaceKHR = *mut std::ffi::c_void;
+use super::{vk_handles, vk_pfn_types, vk_structures};
+
 pub type VkResult = i32;
-pub type PFNvkVoidFunction = Option<unsafe extern "C" fn()>;
 
 pub const VK_SUCCESS: VkResult = 0;
 pub const VK_API_VERSION_1_3: u32 = (0 << 29) | (1 << 22) | (3 << 12) | 0;
@@ -17,13 +15,13 @@ pub static mut VK: Option<vk_structures::VulkanInstanceFns> = None;
 #[link(name = "vulkan")]
 unsafe extern "C" {
     pub fn vkGetInstanceProcAddr(
-        instance: VkInstance,
+        instance: vk_handles::VkInstance,
         p_name: *const std::ffi::c_char,
-    ) -> PFNvkVoidFunction;
+    ) -> vk_pfn_types::PFNvkVoidFunction;
 
     pub fn vkCreateInstance(
         p_create_info: *const vk_structures::VkInstanceCreateInfo,
         p_allocator: *const std::ffi::c_void,
-        p_instance: *mut VkInstance,
+        p_instance: *mut vk_handles::VkInstance,
     ) -> VkResult;
 }

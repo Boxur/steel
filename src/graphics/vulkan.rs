@@ -1,4 +1,5 @@
 pub mod raw;
+mod vk_handles;
 mod vk_pfn_types;
 mod vk_structure_type;
 mod vk_structures;
@@ -8,7 +9,7 @@ use crate::graphics::vulkan::{
     vk_structure_type::VkStructureType,
 };
 
-fn create_vk_instance() -> raw::VkInstance {
+fn create_vk_instance() -> vk_handles::VkInstance {
     let application_info = vk_structures::VkApplicationInfo {
         s_type: VkStructureType::VkStructureTypeApplicationInfo,
         p_next: core::ptr::null(),
@@ -30,7 +31,7 @@ fn create_vk_instance() -> raw::VkInstance {
         enabled_layer_count: layers.len() as u32,
         pp_enabled_layer_names: layers.as_ptr(),
     };
-    let mut instance: raw::VkInstance = core::ptr::null_mut();
+    let mut instance: vk_handles::VkInstance = core::ptr::null_mut();
     unsafe {
         let result = raw::vkCreateInstance(
             &raw const create_instance_info,
@@ -39,22 +40,26 @@ fn create_vk_instance() -> raw::VkInstance {
         );
         assert_eq!(result, VK_SUCCESS);
     }
+    unsafe {
+        let create_xlib_surface =
+            raw::vkGetInstanceProcAddr(instance, c"vkCreateXlibSurfaceKHR".as_ptr()).unwrap();
+        let enumerate_physical_devices =
+            raw::vkGetInstanceProcAddr(instance, c"vkEnumeratePhysicalDevices".as_ptr()).unwrap();
+        raw::VK = Some(vk_structures::VulkanInstanceFns {
+            create_xlib_surface: *(&raw const create_xlib_surface
+                as *const vk_pfn_types::PFNvkCreateXlibSurfaceKHR),
+            enumerate_physical_devices: *(&raw const enumerate_physical_devices
+                as *const vk_pfn_types::PFNvkEnumeratePhysicalDevices),
+        });
+    }
     instance
 }
 
 fn create_vk_surface(
-    instance: raw::VkInstance,
+    instance: vk_handles::VkInstance,
     display: *mut raw::XDisplay,
     window: raw::XWindow,
-) -> raw::VkSurfaceKHR {
-    let name = c"vkCreateXlibSurfaceKHR";
-    unsafe {
-        let func = raw::vkGetInstanceProcAddr(instance, name.as_ptr()).unwrap();
-        raw::VK = Some(vk_structures::VulkanInstanceFns {
-            create_xlib_surface: *(&raw const func
-                as *const vk_pfn_types::PFNvkCreateXlibSurfaceKHR),
-        });
-    }
+) -> vk_handles::VkSurfaceKHR {
     let surface_create_info = vk_structures::VkXlibSurfaceCreateInfoKHR {
         s_type: VkStructureType::VkStructureTypeXlibSurfaceCreateInfoKHR,
         p_next: core::ptr::null(),
@@ -62,7 +67,7 @@ fn create_vk_surface(
         dpy: display,
         window: window,
     };
-    let mut surface: raw::VkSurfaceKHR = core::ptr::null_mut();
+    let mut surface: vk_handles::VkSurfaceKHR = core::ptr::null_mut();
     unsafe {
         let result = (raw::VK.unwrap().create_xlib_surface)(
             instance,
@@ -75,7 +80,34 @@ fn create_vk_surface(
     surface
 }
 
+fn create_vk_devices(instance: vk_handles::VkInstance) -> (u32, Vec<vk_handles::VkPhysicalDevice>) {
+    let mut count = 0u32;
+
+    let mut devices: Vec<vk_handles::VkPhysicalDevice> = Vec::new();
+    unsafe {
+        let result = (raw::VK.unwrap().enumerate_physical_devices)(
+            instance,
+            &raw mut count,
+            core::ptr::null_mut(),
+        );
+        assert_eq!(result, VK_SUCCESS);
+        devices.resize(count as usize, core::ptr::null_mut());
+        let result = (raw::VK.unwrap().enumerate_physical_devices)(
+            instance,
+            &raw mut count,
+            devices.as_mut_ptr(),
+        );
+        assert_eq!(result, VK_SUCCESS);
+
+        let devices = Vec::from(devices);
+        (count, devices)
+    }
+}
+
 pub fn init(display: *mut raw::XDisplay, window: raw::XWindow) {
     let instance = create_vk_instance();
     let _surface = create_vk_surface(instance, display, window);
+    let (device_count, devices) = create_vk_devices(instance);
+    dbg!(device_count);
+    dbg!(devices);
 }

@@ -35,4 +35,5 @@ pub struct VkXlibSurfaceCreateInfoKHR {
 #[derive(Debug, Clone, Copy)]
 pub struct VulkanInstanceFns {
     pub create_xlib_surface: vk_pfn_types::PFNvkCreateXlibSurfaceKHR,
+    pub enumerate_physical_devices: vk_pfn_types::PFNvkEnumeratePhysicalDevices,
 }
