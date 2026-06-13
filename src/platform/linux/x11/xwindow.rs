@@ -44,17 +44,17 @@ impl X11Window {
             raw::XSelectInput(
                 display,
                 window,
-                (event_mask::EventMaskFlags::exposure
-                    | event_mask::EventMaskFlags::key_press
-                    | event_mask::EventMaskFlags::key_release
-                    | event_mask::EventMaskFlags::button_press
-                    | event_mask::EventMaskFlags::button_release
-                    | event_mask::EventMaskFlags::pointer_motion
-                    | event_mask::EventMaskFlags::enter_window
-                    | event_mask::EventMaskFlags::leave_window
-                    | event_mask::EventMaskFlags::focus_change
-                    | event_mask::EventMaskFlags::resize_redirect
-                    | event_mask::EventMaskFlags::structure_notify)
+                (event_mask::EventMaskFlags::Exposure
+                    | event_mask::EventMaskFlags::KeyPress
+                    | event_mask::EventMaskFlags::KeyRelease
+                    | event_mask::EventMaskFlags::ButtonPress
+                    | event_mask::EventMaskFlags::ButtonRelease
+                    | event_mask::EventMaskFlags::PointerMotion
+                    | event_mask::EventMaskFlags::EnterWindow
+                    | event_mask::EventMaskFlags::LeaveWindow
+                    | event_mask::EventMaskFlags::FocusChange
+                    | event_mask::EventMaskFlags::ResizeRedirect
+                    | event_mask::EventMaskFlags::StructureNotify)
                     .into(),
             );
             raw::XMapWindow(display, window);

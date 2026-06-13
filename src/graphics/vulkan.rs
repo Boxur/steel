@@ -40,7 +40,7 @@ pub fn init() {
 
     let name = c"vkCreateXlibSurfaceKHR";
     unsafe {
-        let func = raw::vkGetInstanceProcAddr(instance, name.as_ptr()).unwrap();
+        let _func = raw::vkGetInstanceProcAddr(instance, name.as_ptr()).unwrap();
         // raw::VK = Some(VulkanInstanceFns {
         //     create_xlib_surface: vk_create_xlib_surface,
         // });

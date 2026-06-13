@@ -11,10 +11,7 @@ use message::Message;
 use mouse_pos::MousePos;
 use size::WindowSize;
 
-use crate::{
-    graphics::vulkan,
-    platform::linux::x11::{xevent::XEvent, xmessage::XMessage, xwindow::X11Window},
-};
+use crate::platform::linux::x11::{xevent::XEvent, xmessage::XMessage, xwindow::X11Window};
 
 use std::{
     collections::HashMap,
