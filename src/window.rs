@@ -11,7 +11,10 @@ use message::Message;
 use mouse_pos::MousePos;
 use size::WindowSize;
 
-use crate::platform::linux::x11::{xevent::XEvent, xmessage::XMessage, xwindow::X11Window};
+use crate::{
+    graphics::vulkan,
+    platform::linux::x11::{xevent::XEvent, xmessage::XMessage, xwindow::X11Window},
+};
 
 use std::{
     collections::HashMap,
@@ -41,26 +44,17 @@ impl Window {
             window_size: WindowSize::default(),
         }));
 
+        let xwindow = X11Window::new();
+        let xatoms = xwindow.get_atoms().clone();
+
         let thread_data = Arc::clone(&data);
         let update_loop = thread::spawn(move || {
-            let xatoms;
-            loop {
-                match update_event_channel.recv().unwrap() {
-                    XEvent::Atoms(atoms) => {
-                        xatoms = atoms;
-                        break;
-                    }
-                    _ => {}
-                }
-            }
-            //let atoms = xwindow.get_atoms();
             loop {
                 match update_main_channel.try_recv() {
                     Ok(Message::Stop) | Err(TryRecvError::Disconnected) => break,
                     Err(TryRecvError::Empty) => {}
                 }
                 if let Ok(XEvent::Data(data)) = update_event_channel.try_recv() {
-                    //= xwindow.next_event();
                     let event;
                     {
                         let window_data = &mut (*thread_data.lock().unwrap());
@@ -85,10 +79,6 @@ impl Window {
         });
 
         let event_loop = thread::spawn(move || {
-            let xwindow = X11Window::new();
-            event_update_channel
-                .send(XEvent::Atoms(xwindow.get_atoms().clone()))
-                .unwrap();
             loop {
                 match event_update_channel.try_recv() {
                     Ok(XMessage::Stop) | Err(TryRecvError::Disconnected) => break,

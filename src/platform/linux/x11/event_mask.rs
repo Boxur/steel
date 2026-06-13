@@ -1,126 +1,54 @@
 use std::ops;
 
-pub struct EventMask {
-    bits: isize,
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EventMaskFlags {
+    empty = 0,
+    key_press = 1 << 0,
+    key_release = 1 << 1,
+    button_press = 1 << 2,
+    button_release = 1 << 3,
+    enter_window = 1 << 4,
+    leave_window = 1 << 5,
+    pointer_motion = 1 << 6,
+    pointer_motion_hint = 1 << 7,
+    button_1_motion = 1 << 8,
+    button_2_motion = 1 << 9,
+    button_3_motion = 1 << 10,
+    button_4_motion = 1 << 11,
+    button_5_motion = 1 << 12,
+    button_motion = 1 << 13,
+    keymap_state = 1 << 14,
+    exposure = 1 << 15,
+    visibility_change = 1 << 16,
+    structure_notify = 1 << 17,
+    resize_redirect = 1 << 18,
+    substructure_notify = 1 << 19,
+    substructure_redirect = 1 << 20,
+    focus_change = 1 << 21,
+    property_change = 1 << 22,
+    colormap_change = 1 << 23,
+    owner_grab_button = 1 << 24,
 }
 
-impl EventMask {
-    pub fn empty() -> EventMask {
-        EventMask { bits: 0 }
-    }
+pub struct EventMask(i32);
 
-    pub fn key_press() -> EventMask {
-        EventMask { bits: 1 << 0 }
-    }
-
-    pub fn key_release() -> EventMask {
-        EventMask { bits: 1 << 1 }
-    }
-
-    pub fn button_press() -> EventMask {
-        EventMask { bits: 1 << 2 }
-    }
-
-    pub fn button_release() -> EventMask {
-        EventMask { bits: 1 << 3 }
-    }
-
-    pub fn enter_window() -> EventMask {
-        EventMask { bits: 1 << 4 }
-    }
-
-    pub fn leave_window() -> EventMask {
-        EventMask { bits: 1 << 5 }
-    }
-
-    pub fn pointer_motion() -> EventMask {
-        EventMask { bits: 1 << 6 }
-    }
-
-    pub fn pointer_motion_hint() -> EventMask {
-        EventMask { bits: 1 << 7 }
-    }
-
-    pub fn button_1_motion() -> EventMask {
-        EventMask { bits: 1 << 8 }
-    }
-
-    pub fn button_2_motion() -> EventMask {
-        EventMask { bits: 1 << 9 }
-    }
-
-    pub fn button_3_motion() -> EventMask {
-        EventMask { bits: 1 << 10 }
-    }
-
-    pub fn button_4_motion() -> EventMask {
-        EventMask { bits: 1 << 11 }
-    }
-
-    pub fn button_5_motion() -> EventMask {
-        EventMask { bits: 1 << 12 }
-    }
-
-    pub fn button_motion() -> EventMask {
-        EventMask { bits: 1 << 13 }
-    }
-
-    pub fn keymap_state() -> EventMask {
-        EventMask { bits: 1 << 14 }
-    }
-
-    pub fn exposure() -> EventMask {
-        EventMask { bits: 1 << 15 }
-    }
-
-    pub fn visibility_change() -> EventMask {
-        EventMask { bits: 1 << 16 }
-    }
-
-    pub fn structure_notify() -> EventMask {
-        EventMask { bits: 1 << 17 }
-    }
-
-    pub fn resize_redirect() -> EventMask {
-        EventMask { bits: 1 << 18 }
-    }
-
-    pub fn substructure_notify() -> EventMask {
-        EventMask { bits: 1 << 19 }
-    }
-
-    pub fn substructure_redirect() -> EventMask {
-        EventMask { bits: 1 << 20 }
-    }
-
-    pub fn focus_change() -> EventMask {
-        EventMask { bits: 1 << 21 }
-    }
-
-    pub fn property_change() -> EventMask {
-        EventMask { bits: 1 << 22 }
-    }
-
-    pub fn colormap_change() -> EventMask {
-        EventMask { bits: 1 << 23 }
-    }
-
-    pub fn owner_grab_button() -> EventMask {
-        EventMask { bits: 1 << 24 }
-    }
-}
-
-impl ops::BitOr for EventMask {
+impl ops::BitOr for EventMaskFlags {
     type Output = EventMask;
     fn bitor(self, rhs: Self) -> Self::Output {
-        EventMask {
-            bits: self.bits | rhs.bits,
-        }
+        EventMask(self as i32 | rhs as i32)
+    }
+}
+
+impl ops::BitOr<EventMaskFlags> for EventMask {
+    type Output = EventMask;
+    fn bitor(self, rhs: EventMaskFlags) -> Self::Output {
+        EventMask(self.0 | rhs as i32)
     }
 }
 
 impl From<EventMask> for isize {
     fn from(value: EventMask) -> Self {
-        value.bits
+        value.0 as isize
     }
 }

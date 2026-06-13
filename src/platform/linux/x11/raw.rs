@@ -1,25 +1,25 @@
 use crate::platform::linux::x11::xevent::Data;
 
-pub enum Display {}
-pub type Window = usize;
+pub type XDisplay = std::ffi::c_void;
+pub type XWindow = usize;
 
 #[link(name = "X11")]
 unsafe extern "C" {
-    pub fn XOpenDisplay(name: *const i8) -> *mut Display;
-    pub fn XCloseDisplay(display: *mut Display) -> i32;
-    pub fn XDefaultScreen(display: *mut Display) -> i32;
-    pub fn XRootWindow(display: *mut Display, screen_number: i32) -> Window;
-    pub fn XMapWindow(display: *mut Display, window: Window) -> i32;
-    pub fn XSelectInput(display: *mut Display, window: Window, event_mask: isize) -> i32;
-    pub fn XNextEvent(display: *mut Display, event: &mut Data);
+    pub fn XOpenDisplay(name: *const i8) -> *mut XDisplay;
+    pub fn XCloseDisplay(display: *mut XDisplay) -> i32;
+    pub fn XDefaultScreen(display: *mut XDisplay) -> i32;
+    pub fn XRootWindow(display: *mut XDisplay, screen_number: i32) -> XWindow;
+    pub fn XMapWindow(display: *mut XDisplay, window: XWindow) -> i32;
+    pub fn XSelectInput(display: *mut XDisplay, window: XWindow, event_mask: isize) -> i32;
+    pub fn XNextEvent(display: *mut XDisplay, event: &mut Data);
     pub fn XInternAtom(
-        display: *mut Display,
+        display: *mut XDisplay,
         name: *const std::ffi::c_char,
         only_if_exists: i32,
     ) -> usize;
     pub fn XCreateSimpleWindow(
-        display: *mut Display,
-        parent: Window,
+        display: *mut XDisplay,
+        parent: XWindow,
         x: i32,
         y: i32,
         width: u32,
@@ -27,5 +27,5 @@ unsafe extern "C" {
         border_width: u32,
         border: usize,
         background: usize,
-    ) -> Window;
+    ) -> XWindow;
 }

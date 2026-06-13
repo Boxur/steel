@@ -8,6 +8,6 @@ fn main() {
             window.send_message(Message::Stop);
             break;
         }
-        dbg!(&event);
+        //dbg!(&window.get_data());
     }
 }

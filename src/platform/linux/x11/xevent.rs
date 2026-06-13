@@ -1,16 +1,9 @@
-use crate::{
-    platform::linux::x11::{
-        raw,
-        xatoms::{self, XAtoms},
-    },
-    window::{self, event::Event},
-};
+use crate::platform::linux::x11::raw;
 
 pub type Data = [u8; 192];
 #[repr(C)]
 pub enum XEvent {
     Data(Data),
-    Atoms(XAtoms),
 }
 
 type Time = usize;
@@ -23,9 +16,9 @@ pub struct XInputEvent {
     _serial: usize,
     _send_event: Bool,
     _display: *mut std::ffi::c_void,
-    _window: raw::Window,
-    _root: raw::Window,
-    _subwindow: raw::Window,
+    _window: raw::XWindow,
+    _root: raw::XWindow,
+    _subwindow: raw::XWindow,
     _time: Time,
     pub x: i32,
     pub y: i32,
@@ -44,9 +37,9 @@ pub struct XCrossingEvent {
     _serial: usize,
     _send_event: Bool,
     _display: *mut std::ffi::c_void,
-    _window: raw::Window,
-    _root: raw::Window,
-    _subwindow: raw::Window,
+    _window: raw::XWindow,
+    _root: raw::XWindow,
+    _subwindow: raw::XWindow,
     _time: Time,
     pub x: i32,
     pub y: i32,
@@ -67,7 +60,7 @@ struct XFocusChangeEvent {
     _serial: usize,
     _send_event: Bool,
     _display: *mut std::ffi::c_void,
-    _window: raw::Window,
+    _window: raw::XWindow,
     _mode: i32,
     detail: i32,
 }
@@ -79,7 +72,7 @@ pub struct XResizeRequestEvent {
     _serial: usize,
     _sed_event: Bool,
     _display: *mut std::ffi::c_void,
-    _window: raw::Window,
+    _window: raw::XWindow,
     pub width: i32,
     pub height: i32,
 }

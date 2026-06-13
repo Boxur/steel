@@ -1,14 +1,17 @@
 use std::ffi::CString;
 
 use super::xatoms::XAtoms;
-use crate::platform::linux::x11::{event_mask, raw, xevent};
+use crate::{
+    graphics::vulkan,
+    platform::linux::x11::{event_mask, raw, xevent},
+};
 
 #[derive(Debug)]
 pub struct X11Window {
-    pub display: *mut raw::Display,
+    pub display: *mut raw::XDisplay,
     _screen_number: i32,
-    _window: raw::Window,
-    _parent_window: raw::Window,
+    _window: raw::XWindow,
+    _parent_window: raw::XWindow,
     atoms: XAtoms,
 }
 
@@ -37,23 +40,25 @@ impl X11Window {
 
             let parent_window = raw::XRootWindow(display, screen_number);
             let window = raw::XCreateSimpleWindow(display, parent_window, 0, 0, 800, 600, 1, 0, 0);
+
             raw::XSelectInput(
                 display,
                 window,
-                (event_mask::EventMask::exposure()
-                    | event_mask::EventMask::key_press()
-                    | event_mask::EventMask::key_release()
-                    | event_mask::EventMask::button_press()
-                    | event_mask::EventMask::button_release()
-                    | event_mask::EventMask::pointer_motion()
-                    | event_mask::EventMask::enter_window()
-                    | event_mask::EventMask::leave_window()
-                    | event_mask::EventMask::focus_change()
-                    | event_mask::EventMask::resize_redirect()
-                    | event_mask::EventMask::structure_notify())
-                .into(),
+                (event_mask::EventMaskFlags::exposure
+                    | event_mask::EventMaskFlags::key_press
+                    | event_mask::EventMaskFlags::key_release
+                    | event_mask::EventMaskFlags::button_press
+                    | event_mask::EventMaskFlags::button_release
+                    | event_mask::EventMaskFlags::pointer_motion
+                    | event_mask::EventMaskFlags::enter_window
+                    | event_mask::EventMaskFlags::leave_window
+                    | event_mask::EventMaskFlags::focus_change
+                    | event_mask::EventMaskFlags::resize_redirect
+                    | event_mask::EventMaskFlags::structure_notify)
+                    .into(),
             );
             raw::XMapWindow(display, window);
+            vulkan::init();
 
             let mut xwindow = Self {
                 display,
@@ -83,3 +88,5 @@ impl Drop for X11Window {
         }
     }
 }
+
+unsafe impl Send for X11Window {}
