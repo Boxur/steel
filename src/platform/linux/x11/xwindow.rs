@@ -58,7 +58,7 @@ impl X11Window {
                     .into(),
             );
             raw::XMapWindow(display, window);
-            vulkan::init();
+            vulkan::init(display, window);
 
             let mut xwindow = Self {
                 display,

@@ -3,5 +3,5 @@
 pub enum VkStructureType {
     VkStructureTypeApplicationInfo = 0,
     VkStructureTypeInstanceCreateInfo = 1,
-    _VkStructureTypeXlibSurfaceCreateInfoKHR = 1000004000,
+    VkStructureTypeXlibSurfaceCreateInfoKHR = 1000004000,
 }
