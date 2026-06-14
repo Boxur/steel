@@ -1,3 +1,4 @@
+mod queue;
 mod raw;
 mod vk_handles;
 mod vk_pfn_types;
@@ -130,11 +131,29 @@ fn create_vk_devices(instance: vk_handles::VkInstance) -> Vec<vk_handles::VkPhys
 fn get_valid_queues(
     devices: &Vec<vk_handles::VkPhysicalDevice>,
     surface: vk_handles::VkSurfaceKHR,
-) -> Vec<vk_structures::VkQueueFamilyProperties> {
+) -> Vec<queue::Queue> {
     let mut count = 0_u32;
-    let mut queues: Vec<vk_structures::VkQueueFamilyProperties> = Vec::new();
+    let mut queues: Vec<queue::Queue> = Vec::new();
 
     for device in &*devices {
+        let mut properties = vk_structures::VkPhysicalDeviceProperties2 {
+            s_type: vk_structure_types::VkStructureType::VkStructureTypePhysicalDeviceProperties2,
+            p_next: core::ptr::null(),
+            properties: vk_structures::VkPhysicalDeviceProperties {
+                api_version: 0,
+                driver_version: 0,
+                vendor_id: 0,
+                device_id: 0,
+                device_type: vk_structure_types::VkPhysicalDeviceType::default(),
+                device_name: [0; 256],
+                pipeline_cache_uuid: [0; 16],
+                limits: vk_structures::VkPhysicalDeviceLimits::default(),
+                sparse_properties: vk_structures::VkPhysicalDeviceSparseProperties::default(),
+            },
+        };
+        unsafe {
+            (raw::VK.unwrap()._get_physical_device_properties2)(*device, &raw mut properties);
+        }
         let mut cur: Vec<vk_structures::VkQueueFamilyProperties> = Vec::new();
         unsafe {
             (raw::VK.unwrap().get_physical_device_queue_family_properties)(
@@ -152,7 +171,7 @@ fn get_valid_queues(
                 cur.as_mut_ptr(),
             )
         }
-        let mut supports_surface = raw::VkFalse;
+        let mut supports_surface = raw::VK_FALSE;
         for (index, &q) in cur.iter().enumerate() {
             unsafe {
                 let result = (raw::VK.unwrap().get_physical_device_surface_support_khr)(
@@ -163,11 +182,19 @@ fn get_valid_queues(
                 );
                 assert_eq!(result, raw::VK_SUCCESS);
             }
-            if vk_structure_types::VkQueueFlagBits::VkQueueGraphicsBit & q.queue_flags
-                == vk_structure_types::VkQueueFlags(1)
-                && supports_surface == raw::VkTrue
+            if supports_surface == raw::VK_TRUE
+                || vk_structure_types::VkQueueFlagBits::VkQueueGraphicsBit & q.queue_flags
+                    == vk_structure_types::VkQueueFlags(1)
             {
-                queues.push(q);
+                queues.push(queue::Queue {
+                    vk_queue: q,
+                    device_type: properties.properties.device_type,
+                    index,
+                    supports_surface: supports_surface == raw::VK_TRUE,
+                    supports_graphic: vk_structure_types::VkQueueFlagBits::VkQueueGraphicsBit
+                        & q.queue_flags
+                        == vk_structure_types::VkQueueFlags(1),
+                });
             }
         }
     }

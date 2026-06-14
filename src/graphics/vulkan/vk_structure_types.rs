@@ -22,6 +22,7 @@ pub enum VkPhysicalDeviceType {
     VkPhysicalDeviceTypeCpu = 4,
 }
 
+#[allow(dead_code)]
 #[repr(i32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum VkQueueFlagBits {
@@ -56,6 +57,13 @@ impl BitOr<VkQueueFlags> for VkQueueFlagBits {
     }
 }
 
+impl BitOr<VkQueueFlagBits> for VkQueueFlags {
+    type Output = VkQueueFlags;
+    fn bitor(self, rhs: VkQueueFlagBits) -> Self::Output {
+        VkQueueFlags(self.0 | rhs as u32)
+    }
+}
+
 impl BitAnd for VkQueueFlagBits {
     type Output = VkQueueFlags;
     fn bitand(self, rhs: Self) -> Self::Output {
@@ -67,5 +75,68 @@ impl BitAnd<VkQueueFlags> for VkQueueFlagBits {
     type Output = VkQueueFlags;
     fn bitand(self, rhs: VkQueueFlags) -> Self::Output {
         VkQueueFlags(self as u32 & rhs.0)
+    }
+}
+
+impl BitAnd<VkQueueFlagBits> for VkQueueFlags {
+    type Output = VkQueueFlags;
+    fn bitand(self, rhs: VkQueueFlagBits) -> Self::Output {
+        VkQueueFlags(self.0 & rhs as u32)
+    }
+}
+
+#[allow(dead_code)]
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum VkDeviceQueueCreateFlagBits {
+    #[default]
+    None = 0,
+    VkDeviceQueueCreateProtectedBit = 1 << 0,
+    VkDeviceQueueCreateInternallySynchronizedBitKhr = 1 << 2,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct VkDeviceQueueCreateFlags(pub u32);
+
+impl BitOr for VkDeviceQueueCreateFlagBits {
+    type Output = VkDeviceQueueCreateFlags;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        VkDeviceQueueCreateFlags(self as u32 | rhs as u32)
+    }
+}
+
+impl BitOr<VkDeviceQueueCreateFlags> for VkDeviceQueueCreateFlagBits {
+    type Output = VkDeviceQueueCreateFlags;
+    fn bitor(self, rhs: VkDeviceQueueCreateFlags) -> Self::Output {
+        VkDeviceQueueCreateFlags(self as u32 | rhs.0)
+    }
+}
+
+impl BitOr<VkDeviceQueueCreateFlagBits> for VkDeviceQueueCreateFlags {
+    type Output = VkDeviceQueueCreateFlags;
+    fn bitor(self, rhs: VkDeviceQueueCreateFlagBits) -> Self::Output {
+        VkDeviceQueueCreateFlags(self.0 | rhs as u32)
+    }
+}
+
+impl BitAnd for VkDeviceQueueCreateFlagBits {
+    type Output = VkDeviceQueueCreateFlags;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        VkDeviceQueueCreateFlags(self as u32 & rhs as u32)
+    }
+}
+
+impl BitAnd<VkDeviceQueueCreateFlags> for VkDeviceQueueCreateFlagBits {
+    type Output = VkDeviceQueueCreateFlags;
+    fn bitand(self, rhs: VkDeviceQueueCreateFlags) -> Self::Output {
+        VkDeviceQueueCreateFlags(self as u32 & rhs.0)
+    }
+}
+
+impl BitAnd<VkDeviceQueueCreateFlagBits> for VkDeviceQueueCreateFlags {
+    type Output = VkDeviceQueueCreateFlags;
+    fn bitand(self, rhs: VkDeviceQueueCreateFlagBits) -> Self::Output {
+        VkDeviceQueueCreateFlags(self.0 & rhs as u32)
     }
 }

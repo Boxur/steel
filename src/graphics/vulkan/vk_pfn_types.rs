@@ -32,3 +32,10 @@ pub type PFNvkGetPhysicalDeviceSurfaceSupportKHR = unsafe extern "C" fn(
     surface: vk_handles::VkSurfaceKHR,
     p_supported: *mut raw::VkBool32,
 ) -> raw::VkResult;
+
+pub type vkCreateDevice = unsafe extern "C" fn(
+    physical_device: vk_handles::VkPhysicalDevice,
+    p_create_info: *const vk_structures::VkDeviceCreateInfo,
+    p_allocator: *const std::ffi::c_void,
+    p_device: *mut vk_handles::VkDevice,
+) -> raw::VkResult;
