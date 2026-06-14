@@ -1,12 +1,12 @@
 pub mod raw;
 mod vk_handles;
 mod vk_pfn_types;
-mod vk_structure_type;
+mod vk_structure_types;
 mod vk_structures;
 
 use crate::graphics::vulkan::{
     raw::{VK_API_VERSION_1_3, VK_SUCCESS},
-    vk_structure_type::VkStructureType,
+    vk_structure_types::VkStructureType,
 };
 
 fn create_vk_instance() -> vk_handles::VkInstance {
@@ -80,7 +80,7 @@ fn create_vk_surface(
     surface
 }
 
-fn create_vk_devices(instance: vk_handles::VkInstance) -> (u32, Vec<vk_handles::VkPhysicalDevice>) {
+fn create_vk_devices(instance: vk_handles::VkInstance) -> Vec<vk_handles::VkPhysicalDevice> {
     let mut count = 0u32;
 
     let mut devices: Vec<vk_handles::VkPhysicalDevice> = Vec::new();
@@ -100,14 +100,14 @@ fn create_vk_devices(instance: vk_handles::VkInstance) -> (u32, Vec<vk_handles::
         assert_eq!(result, VK_SUCCESS);
 
         let devices = Vec::from(devices);
-        (count, devices)
+        devices
     }
 }
 
 pub fn init(display: *mut raw::XDisplay, window: raw::XWindow) {
     let instance = create_vk_instance();
     let _surface = create_vk_surface(instance, display, window);
-    let (device_count, devices) = create_vk_devices(instance);
-    dbg!(device_count);
+    let devices = create_vk_devices(instance);
+    dbg!(devices.len());
     dbg!(devices);
 }
