@@ -4,7 +4,10 @@ pub type VkResult = i32;
 pub type VkDeviceSize = u64;
 pub type VkFlags = u32;
 pub type VkSampleCountFlags = VkFlags;
+
 pub type VkBool32 = u32;
+pub const VkFalse: VkBool32 = 0;
+pub const VkTrue: VkBool32 = 0;
 
 pub const VK_SUCCESS: VkResult = 0;
 pub const VK_API_VERSION_1_3: u32 = (0 << 29) | (1 << 22) | (3 << 12) | 0;

@@ -1,4 +1,4 @@
-pub mod raw;
+mod raw;
 mod vk_handles;
 mod vk_pfn_types;
 mod vk_structure_types;
@@ -8,6 +8,40 @@ use crate::graphics::vulkan::{
     raw::{VK_API_VERSION_1_3, VK_SUCCESS},
     vk_structure_types::VkStructureType,
 };
+
+fn get_vk_functions(instance: vk_handles::VkInstance) {
+    unsafe {
+        let create_xlib_surface =
+            raw::vkGetInstanceProcAddr(instance, c"vkCreateXlibSurfaceKHR".as_ptr()).unwrap();
+        let enumerate_physical_devices =
+            raw::vkGetInstanceProcAddr(instance, c"vkEnumeratePhysicalDevices".as_ptr()).unwrap();
+        let get_physical_device_properties2 =
+            raw::vkGetInstanceProcAddr(instance, c"vkGetPhysicalDeviceProperties2".as_ptr())
+                .unwrap();
+        let get_physical_device_queue_family_properties = raw::vkGetInstanceProcAddr(
+            instance,
+            c"vkGetPhysicalDeviceQueueFamilyProperties".as_ptr(),
+        )
+        .unwrap();
+        let get_physical_device_surface_support_khr =
+            raw::vkGetInstanceProcAddr(instance, c"vkGetPhysicalDeviceSurfaceSupportKHR".as_ptr())
+                .unwrap();
+        raw::VK = Some(vk_structures::VulkanInstanceFns {
+            create_xlib_surface: *(&raw const create_xlib_surface
+                as *const vk_pfn_types::PFNvkCreateXlibSurfaceKHR),
+            enumerate_physical_devices: *(&raw const enumerate_physical_devices
+                as *const vk_pfn_types::PFNvkEnumeratePhysicalDevices),
+            _get_physical_device_properties2: *(&raw const get_physical_device_properties2
+                as *const vk_pfn_types::PFNvkGetPhysicalDeviceProperties2),
+            get_physical_device_queue_family_properties:
+                *(&raw const get_physical_device_queue_family_properties
+                    as *const vk_pfn_types::PFNvkGetPhysicalDeviceQueueFamilyProperties),
+            get_physical_device_surface_support_khr:
+                *(&raw const get_physical_device_surface_support_khr
+                    as *const vk_pfn_types::PFNvkGetPhysicalDeviceSurfaceSupportKHR),
+        });
+    }
+}
 
 fn create_vk_instance() -> vk_handles::VkInstance {
     let application_info = vk_structures::VkApplicationInfo {
@@ -40,18 +74,7 @@ fn create_vk_instance() -> vk_handles::VkInstance {
         );
         assert_eq!(result, VK_SUCCESS);
     }
-    unsafe {
-        let create_xlib_surface =
-            raw::vkGetInstanceProcAddr(instance, c"vkCreateXlibSurfaceKHR".as_ptr()).unwrap();
-        let enumerate_physical_devices =
-            raw::vkGetInstanceProcAddr(instance, c"vkEnumeratePhysicalDevices".as_ptr()).unwrap();
-        raw::VK = Some(vk_structures::VulkanInstanceFns {
-            create_xlib_surface: *(&raw const create_xlib_surface
-                as *const vk_pfn_types::PFNvkCreateXlibSurfaceKHR),
-            enumerate_physical_devices: *(&raw const enumerate_physical_devices
-                as *const vk_pfn_types::PFNvkEnumeratePhysicalDevices),
-        });
-    }
+    get_vk_functions(instance);
     instance
 }
 
@@ -104,10 +127,57 @@ fn create_vk_devices(instance: vk_handles::VkInstance) -> Vec<vk_handles::VkPhys
     }
 }
 
+fn get_valid_queues(
+    devices: &Vec<vk_handles::VkPhysicalDevice>,
+    surface: vk_handles::VkSurfaceKHR,
+) -> Vec<vk_structures::VkQueueFamilyProperties> {
+    let mut count = 0_u32;
+    let mut queues: Vec<vk_structures::VkQueueFamilyProperties> = Vec::new();
+
+    for device in &*devices {
+        let mut cur: Vec<vk_structures::VkQueueFamilyProperties> = Vec::new();
+        unsafe {
+            (raw::VK.unwrap().get_physical_device_queue_family_properties)(
+                *device,
+                &raw mut count,
+                core::ptr::null_mut(),
+            );
+            cur.resize(
+                count as usize,
+                vk_structures::VkQueueFamilyProperties::default(),
+            );
+            (raw::VK.unwrap().get_physical_device_queue_family_properties)(
+                *device,
+                &raw mut count,
+                cur.as_mut_ptr(),
+            )
+        }
+        let mut supports_surface = raw::VkFalse;
+        for (index, &q) in cur.iter().enumerate() {
+            unsafe {
+                let result = (raw::VK.unwrap().get_physical_device_surface_support_khr)(
+                    *device,
+                    index as u32,
+                    surface,
+                    &raw mut supports_surface,
+                );
+                assert_eq!(result, raw::VK_SUCCESS);
+            }
+            if vk_structure_types::VkQueueFlagBits::VkQueueGraphicsBit & q.queue_flags
+                == vk_structure_types::VkQueueFlags(1)
+                && supports_surface == raw::VkTrue
+            {
+                queues.push(q);
+            }
+        }
+    }
+    queues
+}
+
 pub fn init(display: *mut raw::XDisplay, window: raw::XWindow) {
     let instance = create_vk_instance();
-    let _surface = create_vk_surface(instance, display, window);
+    let surface = create_vk_surface(instance, display, window);
     let devices = create_vk_devices(instance);
-    dbg!(devices.len());
-    dbg!(devices);
+    let queues = get_valid_queues(&devices, surface);
+    dbg!(&queues);
 }
