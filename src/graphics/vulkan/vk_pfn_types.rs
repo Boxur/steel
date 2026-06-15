@@ -9,33 +9,9 @@ pub type PFNvkCreateXlibSurfaceKHR = unsafe extern "C" fn(
     p_surface: *mut vk_handles::VkSurfaceKHR,
 ) -> raw::VkResult;
 
-pub type PFNvkEnumeratePhysicalDevices = unsafe extern "C" fn(
-    instance: vk_handles::VkInstance,
-    p_physical_device_count: *mut u32,
-    p_physical_devices: *mut vk_handles::VkPhysicalDevice,
-) -> raw::VkResult;
-
-pub type PFNvkGetPhysicalDeviceProperties2 = unsafe extern "C" fn(
-    physical_device: vk_handles::VkPhysicalDevice,
-    p_properties: *mut vk_structures::VkPhysicalDeviceProperties2,
-);
-
-pub type PFNvkGetPhysicalDeviceQueueFamilyProperties = unsafe extern "C" fn(
-    physical_device: vk_handles::VkPhysicalDevice,
-    p_queue_family_property_count: *mut u32,
-    p_queue_family_properties: *mut vk_structures::VkQueueFamilyProperties,
-);
-
 pub type PFNvkGetPhysicalDeviceSurfaceSupportKHR = unsafe extern "C" fn(
     physical_device: vk_handles::VkPhysicalDevice,
     queue_family_index: u32,
     surface: vk_handles::VkSurfaceKHR,
     p_supported: *mut raw::VkBool32,
-) -> raw::VkResult;
-
-pub type vkCreateDevice = unsafe extern "C" fn(
-    physical_device: vk_handles::VkPhysicalDevice,
-    p_create_info: *const vk_structures::VkDeviceCreateInfo,
-    p_allocator: *const std::ffi::c_void,
-    p_device: *mut vk_handles::VkDevice,
 ) -> raw::VkResult;

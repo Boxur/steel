@@ -31,4 +31,28 @@ unsafe extern "C" {
         p_allocator: *const std::ffi::c_void,
         p_instance: *mut vk_handles::VkInstance,
     ) -> VkResult;
+
+    pub fn vkEnumeratePhysicalDevices(
+        instance: vk_handles::VkInstance,
+        p_physical_device_count: *mut u32,
+        p_physical_devices: *mut vk_handles::VkPhysicalDevice,
+    ) -> VkResult;
+
+    pub fn vkGetPhysicalDeviceProperties2(
+        physical_device: vk_handles::VkPhysicalDevice,
+        p_properties: *mut vk_structures::VkPhysicalDeviceProperties2,
+    );
+
+    pub fn vkGetPhysicalDeviceQueueFamilyProperties(
+        physical_device: vk_handles::VkPhysicalDevice,
+        p_queue_family_property_count: *mut u32,
+        p_queue_family_properties: *mut vk_structures::VkQueueFamilyProperties,
+    );
+
+    pub fn vkCreateDevice(
+        physical_device: vk_handles::VkPhysicalDevice,
+        p_create_info: *const vk_structures::VkDeviceCreateInfo,
+        p_allocator: *const std::ffi::c_void,
+        p_device: *mut vk_handles::VkDevice,
+    ) -> VkResult;
 }

@@ -14,29 +14,13 @@ fn get_vk_functions(instance: vk_handles::VkInstance) {
     unsafe {
         let create_xlib_surface =
             raw::vkGetInstanceProcAddr(instance, c"vkCreateXlibSurfaceKHR".as_ptr()).unwrap();
-        let enumerate_physical_devices =
-            raw::vkGetInstanceProcAddr(instance, c"vkEnumeratePhysicalDevices".as_ptr()).unwrap();
-        let get_physical_device_properties2 =
-            raw::vkGetInstanceProcAddr(instance, c"vkGetPhysicalDeviceProperties2".as_ptr())
-                .unwrap();
-        let get_physical_device_queue_family_properties = raw::vkGetInstanceProcAddr(
-            instance,
-            c"vkGetPhysicalDeviceQueueFamilyProperties".as_ptr(),
-        )
-        .unwrap();
         let get_physical_device_surface_support_khr =
             raw::vkGetInstanceProcAddr(instance, c"vkGetPhysicalDeviceSurfaceSupportKHR".as_ptr())
                 .unwrap();
+
         raw::VK = Some(vk_structures::VulkanInstanceFns {
             create_xlib_surface: *(&raw const create_xlib_surface
                 as *const vk_pfn_types::PFNvkCreateXlibSurfaceKHR),
-            enumerate_physical_devices: *(&raw const enumerate_physical_devices
-                as *const vk_pfn_types::PFNvkEnumeratePhysicalDevices),
-            _get_physical_device_properties2: *(&raw const get_physical_device_properties2
-                as *const vk_pfn_types::PFNvkGetPhysicalDeviceProperties2),
-            get_physical_device_queue_family_properties:
-                *(&raw const get_physical_device_queue_family_properties
-                    as *const vk_pfn_types::PFNvkGetPhysicalDeviceQueueFamilyProperties),
             get_physical_device_surface_support_khr:
                 *(&raw const get_physical_device_surface_support_khr
                     as *const vk_pfn_types::PFNvkGetPhysicalDeviceSurfaceSupportKHR),
@@ -109,18 +93,12 @@ fn create_vk_devices(instance: vk_handles::VkInstance) -> Vec<vk_handles::VkPhys
 
     let mut devices: Vec<vk_handles::VkPhysicalDevice> = Vec::new();
     unsafe {
-        let result = (raw::VK.unwrap().enumerate_physical_devices)(
-            instance,
-            &raw mut count,
-            core::ptr::null_mut(),
-        );
+        let result =
+            raw::vkEnumeratePhysicalDevices(instance, &raw mut count, core::ptr::null_mut());
         assert_eq!(result, VK_SUCCESS);
         devices.resize(count as usize, core::ptr::null_mut());
-        let result = (raw::VK.unwrap().enumerate_physical_devices)(
-            instance,
-            &raw mut count,
-            devices.as_mut_ptr(),
-        );
+        let result =
+            raw::vkEnumeratePhysicalDevices(instance, &raw mut count, devices.as_mut_ptr());
         assert_eq!(result, VK_SUCCESS);
 
         let devices = Vec::from(devices);
@@ -152,11 +130,11 @@ fn get_valid_queues(
             },
         };
         unsafe {
-            (raw::VK.unwrap()._get_physical_device_properties2)(*device, &raw mut properties);
+            raw::vkGetPhysicalDeviceProperties2(*device, &raw mut properties);
         }
         let mut cur: Vec<vk_structures::VkQueueFamilyProperties> = Vec::new();
         unsafe {
-            (raw::VK.unwrap().get_physical_device_queue_family_properties)(
+            raw::vkGetPhysicalDeviceQueueFamilyProperties(
                 *device,
                 &raw mut count,
                 core::ptr::null_mut(),
@@ -165,11 +143,7 @@ fn get_valid_queues(
                 count as usize,
                 vk_structures::VkQueueFamilyProperties::default(),
             );
-            (raw::VK.unwrap().get_physical_device_queue_family_properties)(
-                *device,
-                &raw mut count,
-                cur.as_mut_ptr(),
-            )
+            raw::vkGetPhysicalDeviceQueueFamilyProperties(*device, &raw mut count, cur.as_mut_ptr())
         }
         let mut supports_surface = raw::VK_FALSE;
         for (index, &q) in cur.iter().enumerate() {

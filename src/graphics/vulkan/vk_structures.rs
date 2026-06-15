@@ -286,10 +286,6 @@ pub struct VkPhysicalDeviceFeatures {
 #[derive(Debug, Clone, Copy)]
 pub struct VulkanInstanceFns {
     pub create_xlib_surface: vk_pfn_types::PFNvkCreateXlibSurfaceKHR,
-    pub enumerate_physical_devices: vk_pfn_types::PFNvkEnumeratePhysicalDevices,
-    pub _get_physical_device_properties2: vk_pfn_types::PFNvkGetPhysicalDeviceProperties2,
-    pub get_physical_device_queue_family_properties:
-        vk_pfn_types::PFNvkGetPhysicalDeviceQueueFamilyProperties,
     pub get_physical_device_surface_support_khr:
         vk_pfn_types::PFNvkGetPhysicalDeviceSurfaceSupportKHR,
 }
