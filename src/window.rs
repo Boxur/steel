@@ -11,7 +11,10 @@ use message::Message;
 use mouse_pos::MousePos;
 use size::WindowSize;
 
-use crate::platform::linux::x11::{xevent::XEvent, xmessage::XMessage, xwindow::X11Window};
+use crate::{
+    graphics::vulkan,
+    platform::linux::x11::{xevent::XEvent, xmessage::XMessage, xwindow::X11Window},
+};
 
 use std::{
     collections::HashMap,
@@ -28,6 +31,7 @@ pub struct Window {
     update_loop: Option<JoinHandle<()>>,
     event_loop: Option<JoinHandle<()>>,
     data: Arc<Mutex<WindowData>>,
+    _vulkan: vulkan::Vulkan,
 }
 
 impl Window {
@@ -74,7 +78,7 @@ impl Window {
             }
             update_event_channel.send(XMessage::Stop).unwrap();
         });
-
+        let _vulkan = vulkan::Vulkan::new(&xwindow.display, &xwindow.window);
         let event_loop = thread::spawn(move || {
             loop {
                 match event_update_channel.try_recv() {
@@ -91,6 +95,7 @@ impl Window {
             update_loop: Some(update_loop),
             event_loop: Some(event_loop),
             data,
+            _vulkan,
         }
     }
 

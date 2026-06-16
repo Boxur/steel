@@ -1,4 +1,7 @@
-use super::{vk_handles, vk_pfn_types, vk_structures};
+pub mod vk_handles;
+pub mod vk_pfn_types;
+pub mod vk_structure_types;
+pub mod vk_structures;
 
 pub type VkResult = i32;
 pub type VkDeviceSize = u64;
@@ -16,8 +19,6 @@ pub type XDisplay = std::ffi::c_void;
 pub type XWindow = usize;
 
 //pub static mut vkCreateXlibSurfaceKHR
-
-pub static mut VK: Option<vk_structures::VulkanInstanceFns> = None;
 
 #[link(name = "vulkan")]
 unsafe extern "C" {

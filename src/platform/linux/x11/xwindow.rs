@@ -1,16 +1,13 @@
 use std::ffi::CString;
 
 use super::xatoms::XAtoms;
-use crate::{
-    graphics::vulkan,
-    platform::linux::x11::{event_mask, raw, xevent},
-};
+use crate::platform::linux::x11::{event_mask, raw, xevent};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct X11Window {
     pub display: *mut raw::XDisplay,
     _screen_number: i32,
-    _window: raw::XWindow,
+    pub window: raw::XWindow,
     _parent_window: raw::XWindow,
     atoms: XAtoms,
 }
@@ -58,13 +55,12 @@ impl X11Window {
                     .into(),
             );
             raw::XMapWindow(display, window);
-            vulkan::init(display, window);
 
             let mut xwindow = Self {
                 display,
                 _screen_number: screen_number,
                 _parent_window: parent_window,
-                _window: window,
+                window: window,
                 atoms: XAtoms::default(),
             };
             xwindow.setup_atoms();
