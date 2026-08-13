@@ -1,10 +1,12 @@
+mod logical_device;
 mod physical_device;
 mod queue_family;
 mod raw;
 
 use crate::graphics::vulkan::{
+    logical_device::LogicalDevice,
     physical_device::{PhysicalDevice, PhysicalDevices},
-    raw::{VK_API_VERSION_1_3, VK_SUCCESS},
+    raw::VK_SUCCESS,
 };
 
 #[derive(Debug, Default)]
@@ -12,7 +14,8 @@ pub struct Vulkan {
     vk_instance: raw::vk_handles::VkInstance,
     vk_instance_fns: raw::vk_structures::VulkanInstanceFns,
     surface: raw::vk_handles::VkSurfaceKHR,
-    devices: PhysicalDevices,
+    physical_devices: PhysicalDevices,
+    logical_device: Option<LogicalDevice>,
 }
 
 impl Vulkan {
@@ -21,33 +24,22 @@ impl Vulkan {
         s.create_vk_instance();
         s.create_vk_fns();
         s.create_vk_surface(*display, *window);
-        s.create_devices();
-        dbg!(&s.devices);
+        s.create_physical_devices();
+        s.create_logical_device();
         s
     }
 
     fn create_vk_instance(&mut self) {
-        let application_info = raw::vk_structures::VkApplicationInfo {
-            s_type: raw::vk_structure_types::VkStructureType::VkStructureTypeApplicationInfo,
-            p_next: core::ptr::null(),
-            p_application_name: c"App".as_ptr(),
-            application_version: 0,
-            p_engine_name: c"Steel".as_ptr(),
-            engine_version: 0,
-            api_version: VK_API_VERSION_1_3,
-        };
+        b"App";
+        let application_info = raw::vk_structures::VkApplicationInfo::builder()
+            .application_name(b"App\0")
+            .engine_name(b"Steel");
         let extensions = [c"VK_KHR_surface".as_ptr(), c"VK_KHR_xlib_surface".as_ptr()];
         let layers = [c"VK_LAYER_KHRONOS_validation".as_ptr()];
-        let create_instance_info = raw::vk_structures::VkInstanceCreateInfo {
-            s_type: raw::vk_structure_types::VkStructureType::VkStructureTypeInstanceCreateInfo,
-            p_next: core::ptr::null(),
-            flags: 0,
-            p_application_info: &raw const application_info,
-            enabled_extension_count: extensions.len() as u32,
-            pp_enabled_extension_names: extensions.as_ptr(),
-            enabled_layer_count: layers.len() as u32,
-            pp_enabled_layer_names: layers.as_ptr(),
-        };
+        let create_instance_info = raw::vk_structures::VkInstanceCreateInfo::builder()
+            .application_info(&application_info)
+            .enabled_extensions(&extensions)
+            .enabled_layers(&layers);
         let mut instance: raw::vk_handles::VkInstance = core::ptr::null_mut();
         unsafe {
             let result = raw::vkCreateInstance(
@@ -84,14 +76,8 @@ impl Vulkan {
     }
 
     fn create_vk_surface(&mut self, display: *mut raw::XDisplay, window: raw::XWindow) {
-        let surface_create_info = raw::vk_structures::VkXlibSurfaceCreateInfoKHR {
-            s_type:
-                raw::vk_structure_types::VkStructureType::VkStructureTypeXlibSurfaceCreateInfoKHR,
-            p_next: core::ptr::null(),
-            flags: 0,
-            dpy: display,
-            window: window,
-        };
+        let surface_create_info =
+            raw::vk_structures::VkXlibSurfaceCreateInfoKHR::builder(display, window);
         let mut surface: raw::vk_handles::VkSurfaceKHR = core::ptr::null_mut();
         unsafe {
             let result = (self.vk_instance_fns.create_xlib_surface.unwrap())(
@@ -105,8 +91,8 @@ impl Vulkan {
         self.surface = surface;
     }
 
-    fn create_devices(&mut self) {
-        let mut physical_devices = PhysicalDevices::default();
+    fn create_physical_devices(&mut self) {
+        //let mut physical_devices = PhysicalDevices::default();
         let mut count = 0u32;
 
         let mut vk_physical_devices: Vec<raw::vk_handles::VkPhysicalDevice> = Vec::new();
@@ -125,42 +111,32 @@ impl Vulkan {
             );
             assert_eq!(result, VK_SUCCESS);
         }
-        let mut properties = raw::vk_structures::VkPhysicalDeviceProperties2 {
-            s_type:
-                raw::vk_structure_types::VkStructureType::VkStructureTypePhysicalDeviceProperties2,
-            p_next: core::ptr::null(),
-            properties: raw::vk_structures::VkPhysicalDeviceProperties {
-                api_version: 0,
-                driver_version: 0,
-                vendor_id: 0,
-                device_id: 0,
-                device_type: raw::vk_structure_types::VkPhysicalDeviceType::default(),
-                device_name: [0; 256],
-                pipeline_cache_uuid: [0; 16],
-                limits: raw::vk_structures::VkPhysicalDeviceLimits::default(),
-                sparse_properties: raw::vk_structures::VkPhysicalDeviceSparseProperties::default(),
-            },
-        };
+        let mut properties = raw::vk_structures::VkPhysicalDeviceProperties2::default();
 
         for d in vk_physical_devices {
             unsafe {
                 raw::vkGetPhysicalDeviceProperties2(d, &raw mut properties);
             }
-            physical_devices.add_device(PhysicalDevice {
+            self.physical_devices.add_device(PhysicalDevice {
                 vk_handle: d,
                 device_name: std::ffi::CStr::from_bytes_until_nul(
-                    &properties.properties.device_name[..],
+                    &properties.properties.get_device_name()[..],
                 )
                 .unwrap()
                 .to_string_lossy()
                 .to_string(),
-                device_type: properties.properties.device_type,
+                device_type: properties.properties.get_device_type(),
                 graphics_queue_family_index: None,
                 surface_queue_family_index: None,
             });
         }
-        self.devices = physical_devices;
-        self.devices
+        self.physical_devices
             .choose_device(self.vk_instance_fns, self.surface);
+    }
+
+    fn create_logical_device(&mut self) {
+        self.logical_device = Some(LogicalDevice::new(
+            &self.physical_devices.selected_device().unwrap(),
+        ));
     }
 }

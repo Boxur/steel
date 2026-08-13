@@ -4,8 +4,8 @@ pub struct PhysicalDevice {
     pub vk_handle: raw::vk_handles::VkPhysicalDevice,
     pub device_name: String,
     pub device_type: raw::vk_structure_types::VkPhysicalDeviceType,
-    pub graphics_queue_family_index: Option<usize>,
-    pub surface_queue_family_index: Option<usize>,
+    pub graphics_queue_family_index: Option<u32>,
+    pub surface_queue_family_index: Option<u32>,
 }
 
 #[derive(Debug, Default)]
@@ -69,14 +69,14 @@ impl PhysicalDevices {
                 }
                 if supports_surface == false && queue_family_supports_surface == raw::VK_TRUE {
                     supports_surface = true;
-                    physical_device.surface_queue_family_index = Some(j);
+                    physical_device.surface_queue_family_index = Some(j as u32);
                 }
                 if supports_graphics == false
-                    && raw::vk_structure_types::VkQueueFlagBits::VkQueueGraphicsBit & q.queue_flags
+                    && raw::vk_structure_types::VkQueueFlagBits::GraphicsBit & q.queue_flags
                         == raw::vk_structure_types::VkQueueFlags(1)
                 {
                     supports_graphics = true;
-                    physical_device.graphics_queue_family_index = Some(j);
+                    physical_device.graphics_queue_family_index = Some(j as u32);
                 }
                 if supports_surface && supports_graphics {
                     self.selected_device_index = Some(i);

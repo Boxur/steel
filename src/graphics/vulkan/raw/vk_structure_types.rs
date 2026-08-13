@@ -1,13 +1,15 @@
 use std::ops::{BitAnd, BitOr};
 
-#[repr(i32)]
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum VkStructureType {
     #[default]
-    VkStructureTypeApplicationInfo = 0,
-    VkStructureTypeInstanceCreateInfo = 1,
-    VkStructureTypeXlibSurfaceCreateInfoKHR = 1000004000,
-    VkStructureTypePhysicalDeviceProperties2 = 1000059001,
+    ApplicationInfo = 0,
+    InstanceCreateInfo = 1,
+    DeviceQueueCreateInfo = 2,
+    DeviceCreateInfo = 3,
+    XlibSurfaceCreateInfoKHR = 1000004000,
+    PhysicalDeviceProperties2 = 1000059001,
 }
 
 #[allow(dead_code)]
@@ -15,11 +17,11 @@ pub enum VkStructureType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum VkPhysicalDeviceType {
     #[default]
-    VkPhysicalDeviceTypeOther = 0,
-    VkPhysicalDeviceTypeIntegratedGpu = 1,
-    VkPhysicalDeviceTypeDiscreteGpu = 2,
-    VkPhysicalDeviceTypeVirtualGpu = 3,
-    VkPhysicalDeviceTypeCpu = 4,
+    Other = 0,
+    IntegratedGpu = 1,
+    DiscreteGpu = 2,
+    VirtualGpu = 3,
+    Cpu = 4,
 }
 
 #[allow(dead_code)]
@@ -28,15 +30,15 @@ pub enum VkPhysicalDeviceType {
 pub enum VkQueueFlagBits {
     #[default]
     None = 0,
-    VkQueueGraphicsBit = 1 << 0,
-    VkQueueComputeBit = 1 << 1,
-    VkQueueTransferBit = 1 << 2,
-    VkQueueSparseBindingBit = 1 << 3,
-    VkQueueProtectedBit = 1 << 4,
-    VkQueueVideoDecodeBitKhr = 1 << 5,
-    VkQueueVideoEncodeBitKhr = 1 << 6,
-    VkQueueOpticalFlowBitNv = 1 << 8,
-    VkQueueDataGraphBitArm = 1 << 10,
+    GraphicsBit = 1 << 0,
+    ComputeBit = 1 << 1,
+    TransferBit = 1 << 2,
+    SparseBindingBit = 1 << 3,
+    ProtectedBit = 1 << 4,
+    VideoDecodeBitKhr = 1 << 5,
+    VideoEncodeBitKhr = 1 << 6,
+    OpticalFlowBitNv = 1 << 8,
+    DataGraphBitArm = 1 << 10,
 }
 
 #[repr(C)]
@@ -91,8 +93,8 @@ impl BitAnd<VkQueueFlagBits> for VkQueueFlags {
 pub enum VkDeviceQueueCreateFlagBits {
     #[default]
     None = 0,
-    VkDeviceQueueCreateProtectedBit = 1 << 0,
-    VkDeviceQueueCreateInternallySynchronizedBitKhr = 1 << 2,
+    ProtectedBit = 1 << 0,
+    InternallySynchronizedBitKhr = 1 << 2,
 }
 
 #[repr(C)]
@@ -138,5 +140,11 @@ impl BitAnd<VkDeviceQueueCreateFlagBits> for VkDeviceQueueCreateFlags {
     type Output = VkDeviceQueueCreateFlags;
     fn bitand(self, rhs: VkDeviceQueueCreateFlagBits) -> Self::Output {
         VkDeviceQueueCreateFlags(self.0 & rhs as u32)
+    }
+}
+
+impl From<VkDeviceQueueCreateFlagBits> for VkDeviceQueueCreateFlags {
+    fn from(value: VkDeviceQueueCreateFlagBits) -> Self {
+        VkDeviceQueueCreateFlags(value as u32)
     }
 }

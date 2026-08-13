@@ -1,38 +1,133 @@
+#![allow(unused)]
 use super::{vk_pfn_types, vk_structure_types};
+use crate::graphics::vulkan::raw::{self};
 
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct VkInstanceCreateInfo {
-    pub s_type: vk_structure_types::VkStructureType,
-    pub p_next: *const std::ffi::c_void,
-    pub flags: u32,
-    pub p_application_info: *const VkApplicationInfo,
-    pub enabled_layer_count: u32,
-    pub pp_enabled_layer_names: *const *const std::ffi::c_char,
-    pub enabled_extension_count: u32,
-    pub pp_enabled_extension_names: *const *const std::ffi::c_char,
+    s_type: vk_structure_types::VkStructureType,
+    p_next: *const std::ffi::c_void,
+    flags: u32,
+    p_application_info: *const VkApplicationInfo,
+    enabled_layer_count: u32,
+    pp_enabled_layer_names: *const *const std::ffi::c_char,
+    enabled_extension_count: u32,
+    pp_enabled_extension_names: *const *const std::ffi::c_char,
+}
+
+impl VkInstanceCreateInfo {
+    pub fn builder() -> Self {
+        Self {
+            s_type: raw::vk_structure_types::VkStructureType::InstanceCreateInfo,
+            p_next: core::ptr::null(),
+            flags: 0,
+            p_application_info: core::ptr::null(),
+            enabled_layer_count: 0,
+            pp_enabled_layer_names: core::ptr::null(),
+            enabled_extension_count: 0,
+            pp_enabled_extension_names: core::ptr::null(),
+        }
+    }
+
+    pub fn p_next(mut self, next: *const std::ffi::c_void) -> Self {
+        self.p_next = next;
+        self
+    }
+
+    pub fn flags(mut self, flags: u32) -> Self {
+        self.flags = flags;
+        self
+    }
+
+    pub fn application_info<'a>(mut self, application_info: &'a VkApplicationInfo) -> Self {
+        self.p_application_info = application_info;
+        self
+    }
+
+    pub fn enabled_extensions<'a>(mut self, extensions: &'a [*const i8]) -> Self {
+        self.enabled_extension_count = extensions.len() as u32;
+        self.pp_enabled_extension_names = extensions.as_ptr();
+        self
+    }
+
+    pub fn enabled_layers<'a>(mut self, layers: &'a [*const i8]) -> Self {
+        self.enabled_layer_count = layers.len() as u32;
+        self.pp_enabled_layer_names = layers.as_ptr();
+        self
+    }
 }
 
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct VkApplicationInfo {
-    pub s_type: vk_structure_types::VkStructureType,
-    pub p_next: *const std::ffi::c_void,
-    pub p_application_name: *const i8,
-    pub application_version: u32,
-    pub p_engine_name: *const i8,
-    pub engine_version: u32,
-    pub api_version: u32,
+    s_type: vk_structure_types::VkStructureType,
+    p_next: *const std::ffi::c_void,
+    p_application_name: *const u8,
+    application_version: u32,
+    p_engine_name: *const u8,
+    engine_version: u32,
+    api_version: u32,
+}
+
+impl VkApplicationInfo {
+    pub fn builder() -> Self {
+        Self {
+            s_type: raw::vk_structure_types::VkStructureType::ApplicationInfo,
+            p_next: core::ptr::null(),
+            p_application_name: b"\0".as_ptr(),
+            application_version: 0,
+            p_engine_name: b"\0".as_ptr(),
+            engine_version: 0,
+            api_version: raw::VK_API_VERSION_1_3,
+        }
+    }
+
+    pub fn p_next(mut self, next: *const std::ffi::c_void) -> Self {
+        self.p_next = next;
+        self
+    }
+
+    pub fn application_name(mut self, name: &[u8]) -> Self {
+        self.p_application_name = name.as_ptr();
+        self
+    }
+
+    pub fn application_version(mut self, version: u32) -> Self {
+        self.application_version = version;
+        self
+    }
+
+    pub fn engine_name(mut self, name: &[u8]) -> Self {
+        self.p_engine_name = name.as_ptr();
+        self
+    }
+
+    pub fn engine_version(mut self, version: u32) -> Self {
+        self.engine_version = version;
+        self
+    }
 }
 
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct VkXlibSurfaceCreateInfoKHR {
-    pub s_type: vk_structure_types::VkStructureType,
-    pub p_next: *const std::ffi::c_void,
-    pub flags: u32,
-    pub dpy: *mut super::XDisplay,
-    pub window: super::XWindow,
+    s_type: vk_structure_types::VkStructureType,
+    p_next: *const std::ffi::c_void,
+    flags: u32,
+    dpy: *mut super::XDisplay,
+    window: super::XWindow,
+}
+
+impl VkXlibSurfaceCreateInfoKHR {
+    pub fn builder(display: *mut super::XDisplay, window: super::XWindow) -> Self {
+        Self {
+            s_type: raw::vk_structure_types::VkStructureType::XlibSurfaceCreateInfoKHR,
+            p_next: core::ptr::null(),
+            flags: 0,
+            dpy: display,
+            window: window,
+        }
+    }
 }
 
 #[repr(C)]
@@ -43,18 +138,54 @@ pub struct VkPhysicalDeviceProperties2 {
     pub properties: VkPhysicalDeviceProperties,
 }
 
+impl Default for VkPhysicalDeviceProperties2 {
+    fn default() -> Self {
+        Self {
+            s_type: raw::vk_structure_types::VkStructureType::PhysicalDeviceProperties2,
+            p_next: core::ptr::null(),
+            properties: raw::vk_structures::VkPhysicalDeviceProperties::default(),
+        }
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct VkPhysicalDeviceProperties {
-    pub api_version: u32,
-    pub driver_version: u32,
-    pub vendor_id: u32,
-    pub device_id: u32,
-    pub device_type: vk_structure_types::VkPhysicalDeviceType,
-    pub device_name: [u8; 256_usize],
-    pub pipeline_cache_uuid: [u8; 16_usize],
-    pub limits: VkPhysicalDeviceLimits,
-    pub sparse_properties: VkPhysicalDeviceSparseProperties,
+    api_version: u32,
+    driver_version: u32,
+    vendor_id: u32,
+    device_id: u32,
+    device_type: vk_structure_types::VkPhysicalDeviceType,
+    device_name: [u8; 256_usize],
+    pipeline_cache_uuid: [u8; 16_usize],
+    limits: VkPhysicalDeviceLimits,
+    sparse_properties: VkPhysicalDeviceSparseProperties,
+}
+
+impl Default for VkPhysicalDeviceProperties {
+    fn default() -> Self {
+        Self {
+            api_version: 0,
+            driver_version: 0,
+            vendor_id: 0,
+            device_id: 0,
+            device_type: raw::vk_structure_types::VkPhysicalDeviceType::default(),
+            device_name: [0; 256],
+            pipeline_cache_uuid: [0; 16],
+            limits: raw::vk_structures::VkPhysicalDeviceLimits::default(),
+            sparse_properties: raw::vk_structures::VkPhysicalDeviceSparseProperties::default(),
+        }
+    }
+}
+
+impl VkPhysicalDeviceProperties {
+    pub fn get_device_name(&self) -> [u8; 256_usize] {
+        self.device_name
+    }
+
+    pub fn get_device_type(&self) -> vk_structure_types::VkPhysicalDeviceType {
+        self.device_type
+    }
 }
 
 #[repr(C)]
@@ -202,23 +333,160 @@ pub struct VkDeviceCreateInfo {
     p_next: *const std::ffi::c_void,
     flags: u32,
     queue_create_info_count: u32,
-    p_queue_create_infos: *const VkDeviceQueueCreateInfo,
+    pub p_queue_create_infos: *const VkDeviceQueueCreateInfo,
     enabled_layer_count: u32,
-    pp_enabled_layer_names: *const *const i8,
+    pp_enabled_layer_names: *mut *const i8,
     enabled_extension_count: u32,
-    pp_enabled_extension_names: *const *const i8,
+    pp_enabled_extension_names: *mut *const i8,
+    p_enabled_features: *const VkPhysicalDeviceFeatures,
+}
+
+impl VkDeviceCreateInfo {
+    pub fn builder() -> Self {
+        Self {
+            s_type: vk_structure_types::VkStructureType::DeviceCreateInfo,
+            p_next: core::ptr::null(),
+            flags: 0,
+            queue_create_info_count: 0,
+            p_queue_create_infos: core::ptr::null(),
+            enabled_layer_count: 0,
+            pp_enabled_layer_names: core::ptr::null_mut(),
+            enabled_extension_count: 0,
+            pp_enabled_extension_names: core::ptr::null_mut(),
+            p_enabled_features: core::ptr::null(),
+        }
+    }
+
+    pub fn p_next(mut self, next: *const std::ffi::c_void) -> Self {
+        self.p_next = next;
+        self
+    }
+
+    pub fn queue_create_info(
+        mut self,
+        queue_create_info: &Vec<VkDeviceQueueCreateInfo>,
+        count: u32,
+    ) -> Self {
+        self.queue_create_info_count = count;
+        self.p_queue_create_infos = queue_create_info.as_ptr();
+        self
+    }
+}
+
+#[cfg(test)]
+mod vk_device_create_info_tests {
+    use super::*;
+    #[test]
+    fn builder() {
+        let device_create_info = VkDeviceCreateInfo::builder();
+        assert_eq!(
+            device_create_info.s_type,
+            vk_structure_types::VkStructureType::DeviceCreateInfo
+        );
+        assert_eq!(device_create_info.p_next, core::ptr::null());
+        assert_eq!(device_create_info.flags, 0);
+        assert_eq!(device_create_info.queue_create_info_count, 0);
+        assert_eq!(device_create_info.p_queue_create_infos, core::ptr::null());
+        assert_eq!(device_create_info.enabled_extension_count, 0);
+        assert_eq!(
+            device_create_info.pp_enabled_extension_names,
+            core::ptr::null_mut()
+        );
+        assert_eq!(device_create_info.enabled_layer_count, 0);
+        assert_eq!(
+            device_create_info.pp_enabled_layer_names,
+            core::ptr::null_mut()
+        );
+    }
+
+    #[test]
+    fn p_next() {
+        let sth = 2;
+        let device_create_info =
+            VkDeviceCreateInfo::builder().p_next(&raw const sth as *const std::ffi::c_void);
+        assert_eq!(
+            device_create_info.p_next,
+            &raw const sth as *const std::ffi::c_void
+        );
+    }
+
+    #[test]
+    fn queue_create_info() {
+        let mut queue_create_info: Vec<VkDeviceQueueCreateInfo> = vec![];
+        let priorities = vec![1.0_f32];
+        queue_create_info.push(VkDeviceQueueCreateInfo::builder(0, &priorities, 1));
+        queue_create_info.push(VkDeviceQueueCreateInfo::builder(1, &priorities, 1));
+        let device_create_info =
+            VkDeviceCreateInfo::builder().queue_create_info(&queue_create_info, 2);
+        assert_eq!(device_create_info.queue_create_info_count, 2);
+        assert_eq!(
+            device_create_info.p_queue_create_infos,
+            queue_create_info.as_ptr()
+        );
+        unsafe {
+            assert_eq!(
+                (std::slice::from_raw_parts(device_create_info.p_queue_create_infos.cast_mut(), 2))
+                    [0],
+                queue_create_info[0]
+            );
+            assert_eq!(
+                (std::slice::from_raw_parts(device_create_info.p_queue_create_infos.cast_mut(), 2))
+                    [1],
+                queue_create_info[1]
+            );
+        }
+    }
 }
 
 #[repr(C)]
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct VkDeviceQueueCreateInfo {
     s_type: vk_structure_types::VkStructureType,
     p_next: *const std::ffi::c_void,
     flags: vk_structure_types::VkDeviceQueueCreateFlags,
     queue_family_index: u32,
     queue_count: u32,
-    p_queue_priorities: *const f32,
-    p_enabled_features: *const VkPhysicalDeviceFeatures,
+    pub p_queue_priorities: *const f32,
+}
+
+impl VkDeviceQueueCreateInfo {
+    pub fn builder(queue_family_index: u32, queue_priorities: &Vec<f32>, count: u32) -> Self {
+        Self {
+            s_type: vk_structure_types::VkStructureType::DeviceQueueCreateInfo,
+            p_next: core::ptr::null(),
+            flags: vk_structure_types::VkDeviceQueueCreateFlagBits::None.into(),
+            queue_family_index,
+            queue_count: count,
+            p_queue_priorities: queue_priorities.as_ptr(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod vk_device_queue_create_info_tests {
+    use super::*;
+    #[test]
+    fn builder() {
+        let priorities = vec![1.0_f32];
+        let device_queue_create_info = VkDeviceQueueCreateInfo::builder(0, &priorities, 1);
+        assert_eq!(
+            device_queue_create_info.s_type,
+            vk_structure_types::VkStructureType::DeviceQueueCreateInfo
+        );
+        assert_eq!(device_queue_create_info.p_next, core::ptr::null());
+        assert_eq!(device_queue_create_info.queue_count, 1);
+        assert_eq!(
+            device_queue_create_info.flags,
+            vk_structure_types::VkDeviceQueueCreateFlagBits::None.into()
+        );
+        unsafe {
+            assert_eq!(
+                std::slice::from_raw_parts(device_queue_create_info.p_queue_priorities, 1)[0],
+                1.0_f32
+            );
+        }
+        assert!(device_queue_create_info.queue_count > 0);
+    }
 }
 
 #[repr(C)]
