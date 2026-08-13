@@ -333,11 +333,11 @@ pub struct VkDeviceCreateInfo {
     p_next: *const std::ffi::c_void,
     flags: u32,
     queue_create_info_count: u32,
-    pub p_queue_create_infos: *const VkDeviceQueueCreateInfo,
+    p_queue_create_infos: *const VkDeviceQueueCreateInfo,
     enabled_layer_count: u32,
-    pp_enabled_layer_names: *mut *const i8,
+    pp_enabled_layer_names: *const *const i8,
     enabled_extension_count: u32,
-    pp_enabled_extension_names: *mut *const i8,
+    pp_enabled_extension_names: *const *const i8,
     p_enabled_features: *const VkPhysicalDeviceFeatures,
 }
 
@@ -369,6 +369,12 @@ impl VkDeviceCreateInfo {
     ) -> Self {
         self.queue_create_info_count = count;
         self.p_queue_create_infos = queue_create_info.as_ptr();
+        self
+    }
+
+    pub fn enabled_extensions(mut self, extensions: &Vec<*const i8>) -> Self {
+        self.enabled_extension_count = extensions.len() as u32;
+        self.pp_enabled_extension_names = extensions.as_ptr();
         self
     }
 }
@@ -446,7 +452,7 @@ pub struct VkDeviceQueueCreateInfo {
     flags: vk_structure_types::VkDeviceQueueCreateFlags,
     queue_family_index: u32,
     queue_count: u32,
-    pub p_queue_priorities: *const f32,
+    p_queue_priorities: *const f32,
 }
 
 impl VkDeviceQueueCreateInfo {

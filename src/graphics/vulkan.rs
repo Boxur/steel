@@ -20,13 +20,13 @@ pub struct Vulkan {
 
 impl Vulkan {
     pub fn new(display: &*mut raw::XDisplay, window: &raw::XWindow) -> Self {
-        let mut s = Self::default();
-        s.create_vk_instance();
-        s.create_vk_fns();
-        s.create_vk_surface(*display, *window);
-        s.create_physical_devices();
-        s.create_logical_device();
-        s
+        let mut vulkan = Self::default();
+        vulkan.create_vk_instance();
+        vulkan.create_vk_fns();
+        vulkan.create_vk_surface(*display, *window);
+        vulkan.create_physical_devices();
+        vulkan.create_logical_device();
+        vulkan
     }
 
     fn create_vk_instance(&mut self) {
