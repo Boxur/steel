@@ -56,4 +56,11 @@ unsafe extern "C" {
         p_allocator: *const std::ffi::c_void,
         p_device: *mut vk_handles::VkDevice,
     ) -> VkResult;
+
+    pub fn vkGetDeviceQueue(
+        device: vk_handles::VkDevice,
+        queue_family_index: u32,
+        queue_index: u32,
+        p_queue: *mut vk_handles::VkQueue,
+    ) -> VkResult;
 }

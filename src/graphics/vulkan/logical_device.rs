@@ -111,4 +111,8 @@ impl LogicalDevice {
             logical_device_data,
         )
     }
+
+    pub fn get_vk_device(&self) -> vk_handles::VkDevice {
+        self.vk_device
+    }
 }

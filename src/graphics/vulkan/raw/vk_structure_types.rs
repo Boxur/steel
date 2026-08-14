@@ -87,6 +87,12 @@ impl BitAnd<VkQueueFlagBits> for VkQueueFlags {
     }
 }
 
+impl From<VkQueueFlagBits> for VkQueueFlags {
+    fn from(value: VkQueueFlagBits) -> Self {
+        Self(value as u32)
+    }
+}
+
 #[allow(dead_code)]
 #[repr(i32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
